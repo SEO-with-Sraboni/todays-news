@@ -329,7 +329,7 @@
   <!-- Publication editor -->
   <dialog id="pubDlg" class="sheet wide">
     <form method="dialog" class="sheet-body" id="pubForm">
-      <div class="sheet-head"><h2 id="pubDlgTitle">Publication</h2><button class="icon-btn" value="cancel" aria-label="Close">✕</button></div>
+      <div class="sheet-head"><h2 id="pubDlgTitle">Publication</h2><button class="icon-btn" value="cancel" formnovalidate aria-label="Close">✕</button></div>
       <div class="form-grid">
         <label class="field"><span>Name</span><input name="name" required></label>
         <label class="field"><span>Domain</span><input name="domain" placeholder="example.com"></label>
@@ -370,7 +370,7 @@
       </div>
       <div class="sheet-foot">
         <button type="button" class="btn btn-ghost danger" id="delPub">Delete</button>
-        <div class="row"><button class="btn btn-ghost" value="cancel">Cancel</button><button class="btn btn-gold" value="save" id="savePub">Save publication</button></div>
+        <div class="row"><button class="btn btn-ghost" value="cancel" formnovalidate>Cancel</button><button class="btn btn-gold" value="save" id="savePub">Save publication</button></div>
       </div>
     </form>
   </dialog>
@@ -378,7 +378,7 @@
   <!-- Paste guidelines fallback -->
   <dialog id="pasteDlg" class="sheet">
     <form method="dialog" class="sheet-body">
-      <div class="sheet-head"><h2>Paste guidelines</h2><button class="icon-btn" value="cancel" aria-label="Close">✕</button></div>
+      <div class="sheet-head"><h2>Paste guidelines</h2><button class="icon-btn" value="cancel" formnovalidate aria-label="Close">✕</button></div>
       <p class="hint" id="pasteWhy">The page couldn't be read automatically. Copy the guidelines text from the site and paste it here.</p>
       <textarea id="pasteText" rows="10" placeholder="Paste the contributor guidelines…"></textarea>
       <div class="sheet-foot"><span></span><button class="btn btn-gold" value="ok">Extract rules</button></div>
@@ -388,7 +388,7 @@
   <!-- Import URL -->
   <dialog id="urlDlg" class="sheet">
     <form method="dialog" class="sheet-body">
-      <div class="sheet-head"><h2>Import a published article</h2><button class="icon-btn" value="cancel" aria-label="Close">✕</button></div>
+      <div class="sheet-head"><h2>Import a published article</h2><button class="icon-btn" value="cancel" formnovalidate aria-label="Close">✕</button></div>
       <input id="urlInput" type="url" placeholder="https://example.com/news/article">
       <p class="hint">Checks the article text plus page SEO: canonical, schema, Open Graph, image alt text, dates.</p>
       <div class="sheet-foot"><span></span><button class="btn btn-gold" value="ok">Import &amp; check</button></div>
@@ -398,7 +398,7 @@
   <!-- Paste HTML -->
   <dialog id="htmlDlg" class="sheet">
     <form method="dialog" class="sheet-body">
-      <div class="sheet-head"><h2>Paste page HTML source</h2><button class="icon-btn" value="cancel" aria-label="Close">✕</button></div>
+      <div class="sheet-head"><h2>Paste page HTML source</h2><button class="icon-btn" value="cancel" formnovalidate aria-label="Close">✕</button></div>
       <textarea id="htmlInput" rows="10" placeholder="Right-click a page → View page source → copy all → paste here"></textarea>
       <div class="sheet-foot"><span></span><button class="btn btn-gold" value="ok">Check HTML</button></div>
     </form>
