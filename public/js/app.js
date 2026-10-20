@@ -266,8 +266,10 @@
     const ring = $("ring");
     ring.style.setProperty("--v", r.score);
     ring.dataset.band = r.errors ? "bad" : r.score >= 85 ? "good" : r.score >= 70 ? "ok" : "bad";
-    $("score").textContent = r.score;
-    $("grade").textContent = r.grade;
+    const empty = r.stats.wc < 30;
+    if (empty) { ring.style.setProperty("--v", 0); ring.dataset.band = ""; }
+    $("score").textContent = empty ? "—" : r.score;
+    $("grade").textContent = empty ? "Waiting for an article" : r.grade;
     $("cErr").textContent = r.errors;
     $("cWarn").textContent = r.warns;
     $("cPass").textContent = r.passes;
