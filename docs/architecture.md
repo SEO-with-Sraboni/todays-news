@@ -30,6 +30,8 @@ flowchart LR
 |---|---|---|
 | `/api/generate` | POST | Proxies a prompt to Gemini (model allow-list, size cap, 55 s timeout); returns text, grounding sources and search queries |
 | `/api/page?url=` | GET | Fetches a public page for QC import; blocks private/internal hosts, 2 MB cap, 12 s timeout |
+| `/api/pulse` | GET | Reads Google Search Central, Search Engine Roundtable, Search Engine Journal and Search Engine Land feeds; cached 15 min |
+| `/api/sync` | GET, PUT | Stores the workspace in Netlify Blobs; requires `ACCESS_CODE` |
 | `/api/status` | GET | Reports whether a key and access code are configured (booleans only) |
 
 ## Free-tier limits

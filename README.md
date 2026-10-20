@@ -10,39 +10,42 @@
 
 ## The problem
 
-Daily market news is a speed game, but speed breeds SEO and trust mistakes: titles that get truncated, keyword stuffing, missing risk disclaimers, unsourced numbers, and AI-sounding filler. In finance — a "Your Money or Your Life" topic — those mistakes cost rankings and credibility.
+Financial contributors write for several publications, and each one has its own rules: word limits, sourcing, disclaimers, promotional bans, AI-content policies. On top of that, every article must satisfy Google's helpful-content, spam and YMYL standards. Tracking all of that by hand is slow and error-prone.
 
 ## The solution
 
-Today's News puts the **writer and the editor in one screen**:
+Today's News is an **all-in-one financial news desk**:
 
-1. **Generate** — Gemini searches the web live (Google Search grounding), picks the most newsworthy development of the day for the chosen desk, and writes it in a consistent house format with SEO front matter and cited sources.
-2. **QC instantly** — 30+ rule-based checks run in the browser as you type, each mapped to a specific Google Search Central document.
-3. **Fix fast** — click any issue to jump straight to the problem text in the editor. Re-check updates live.
-4. **Second opinion** — an optional AI editor review quotes problem sentences and suggests rewrites.
-5. **Publish** — copy formatted text straight into Google Docs, or copy the Markdown.
+1. **Publications** — a profile per site. Paste a contributor-guidelines URL and AI extracts the rules into an editable checklist (word limits, links, disclaimers, banned phrases, AI policy and more).
+2. **Write** — Gemini researches today's story with live Google Search and writes it to the selected publication's rules, with cited sources.
+3. **QC** — 40+ checks run as you type: Google guidance (title/meta, keyword stuffing, structure, readability, YMYL trust, sourcing) plus the publication's own rules. Click an issue to jump to it.
+4. **Audit published work** — import any article URL, file (.docx, .md, .html, .txt) or raw HTML; page-SEO checks cover canonical, noindex, NewsArticle schema, Open Graph, image alt text and dates. Batch-check up to 10 URLs.
+5. **Report** — export any report to CSV or copy it straight into Google Sheets. Save drafts and audits to the Library.
+6. **Stay current** — Google Pulse collects Google Search ranking updates and documentation changes; the Policy Library explains the guidance behind every check.
 
 ## Features
 
 | Area | What it does |
 |---|---|
-| Desks | Top story, Forex, Gold & metals, Oil, Stocks, Crypto, Central banks, Week ahead |
-| Live research | Gemini with Google Search grounding; sources listed and cited inline |
-| House format | Front matter (title, meta, focus keyword, slug, author) → H1 → lede → key takeaways → sections → disclaimer |
-| Content QC | Title & meta length, keyword placement & density, keyword stuffing, heading hierarchy, thin content, readability (Flesch), long sentences/paragraphs, duplicate sentences, clickbait, AI filler, YMYL red flags, disclaimers, sourcing, dates, slug format |
-| URL import | QC any public article by URL via a server function (with SSRF protection) |
-| Workflow | Edit/preview, autosave, Ctrl + Enter re-check, weekly wire log, copy-for-Docs |
-| Security | API key kept server-side in a Netlify Function; optional access code; personal-key override |
+| Desk | Today's brief, KPIs, recent work, latest Google updates |
+| Write & QC | Eight market desks, live search grounding, house format, editor/preview, copy to Google Docs |
+| Publications | Per-site rule profiles, AI rule import from guideline pages, AI-policy warnings |
+| Content QC | Google checks + site rules + optional AI editor review |
+| Page SEO | Canonical, robots, schema, Open Graph, viewport, alt text, publish dates, HTTPS |
+| Batch QC | Up to 10 URLs, CSV / Google Sheets export |
+| Library | Saved drafts and published audits per publication |
+| Sync | Optional cloud sync via Netlify Blobs behind an access code; JSON export/import |
+| Security | AI key server-side, access code, SSRF-guarded page fetcher |
 
-See **[docs/qc-rules.md](docs/qc-rules.md)** for every check and the Google guidance behind it.
+See **[docs/qc-rules.md](docs/qc-rules.md)** and **[docs/publication-profiles.md](docs/publication-profiles.md)**.
 
 ## Tech stack
 
 - **Frontend:** vanilla HTML, CSS and JavaScript — no framework, no build step
-- **Backend:** Netlify Functions (TypeScript) as a secure proxy to the Gemini API
-- **AI:** Google Gemini 2.5 (free tier) with Google Search grounding
-- **Libraries:** marked (Markdown), DOMPurify (sanitizing preview HTML)
-- **Hosting:** Netlify free tier, continuous deployment from GitHub
+- **Backend:** Netlify Functions (TypeScript): Gemini proxy, page fetcher, Google Pulse feed reader, workspace sync
+- **Storage:** browser storage + Netlify Blobs
+- **AI:** Google Gemini 2.5 with Google Search grounding (free tier, or Netlify AI Gateway)
+- **Libraries:** marked, DOMPurify, mammoth (Word import, loaded on demand)
 
 Architecture notes: **[docs/architecture.md](docs/architecture.md)**
 
@@ -50,7 +53,7 @@ Architecture notes: **[docs/architecture.md](docs/architecture.md)**
 
 1. Fork this repo and import it into [Netlify](https://app.netlify.com) (**Add new site → Import from Git**). No build command is needed; the publish folder is `public`.
 2. Get a free API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
-3. In Netlify go to **Site configuration → Environment variables** and add `GEMINI_API_KEY` (scope: Functions). Optionally add `ACCESS_CODE` so only people with the code can generate.
+3. In Netlify go to **Site configuration → Environment variables** and add `GEMINI_API_KEY` (scope: Functions). Optionally add `ACCESS_CODE` so only people with the code can generate — it also turns on cloud sync.
 4. Redeploy. The header pill should read **Gemini ready**.
 
 Local development:
@@ -65,19 +68,20 @@ npm test               # QC engine tests
 ## Project structure
 
 ```
-public/            static site (index.html, css/, js/qc.js, js/prompt.js, js/app.js)
-netlify/functions/ generate.mts (Gemini proxy), page.mts (URL import), status.mts (health)
+public/            static site (index.html, css/, js/qc.js, js/prompt.js, js/data.js, js/app.js)
+netlify/functions/ generate.mts (Gemini), page.mts (URL import), pulse.mts (Google news), sync.mts (cloud sync), status.mts
 docs/              QC rules and architecture
 tests/             QC engine tests
 ```
 
 ## Roadmap
 
+- [x] Custom QC rule sets per publication
+- [x] Saved history with cloud sync
 - [ ] Claude as a second provider (paid, bring-your-own-key)
-- [ ] NewsArticle JSON-LD schema generator from the front matter
-- [ ] Export straight to Google Docs / WordPress drafts
-- [ ] Saved article history with Netlify Blobs
-- [ ] Custom QC rule sets per publication
+- [ ] NewsArticle JSON-LD generator from the front matter
+- [ ] Export to WordPress drafts
+- [ ] Plagiarism check via a paid API
 
 ## Disclaimer
 

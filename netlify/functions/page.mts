@@ -42,7 +42,7 @@ export default async (req: Request, _context: Context) => {
   try {
     res = await fetch(url, {
       redirect: "follow",
-      headers: { "user-agent": "TodaysNewsQC/1.0 (+content quality checker)", accept: "text/html,*/*;q=0.5" },
+      headers: { "user-agent": "TodaysNewsQC/1.0 (+content quality checker)", accept: "text/html,*/*;q=0.5", "accept-language": "en-US,en;q=0.9" },
       signal: AbortSignal.timeout(12_000),
     });
   } catch {
@@ -51,6 +51,9 @@ export default async (req: Request, _context: Context) => {
 
   const finalUrl = new URL(res.url || url.href);
   if (isBlockedHost(finalUrl.hostname)) return json(400, { error: "That page redirected to a blocked host." });
+  if (res.status === 401 || res.status === 403 || res.status === 429) {
+    return json(502, { error: `This site blocks automated reads (HTTP ${res.status}). Open the page, copy its source and use Paste HTML instead.` });
+  }
   if (!res.ok) return json(502, { error: `The page returned HTTP ${res.status}.` });
 
   const type = res.headers.get("content-type") || "";

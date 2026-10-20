@@ -14,6 +14,8 @@ const decode = (s: string) =>
     .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"').replace(/&#0?39;|&apos;|&#8217;/g, "'").replace(/&#8216;/g, "'")
     .replace(/&#8220;|&#8221;/g, '"').replace(/&#8211;|&#8212;/g, "–").replace(/&nbsp;/g, " ")
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(+d))
     .trim();
 
 const tag = (xml: string, name: string) => {
