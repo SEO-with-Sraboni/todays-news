@@ -35,6 +35,7 @@ Today's News is an **all-in-one financial news desk**:
 | Batch QC | Up to 10 URLs, CSV / Google Sheets export |
 | Library | Saved drafts and published audits per publication |
 | Sync | Optional cloud sync via Netlify Blobs behind an access code; JSON export/import |
+| AI providers | Gemini, Claude, ChatGPT, OpenRouter, Groq, DeepSeek, Mistral; live model lists per key |
 | Security | AI key server-side, access code, SSRF-guarded page fetcher |
 
 See **[docs/qc-rules.md](docs/qc-rules.md)** and **[docs/publication-profiles.md](docs/publication-profiles.md)**.
@@ -44,7 +45,7 @@ See **[docs/qc-rules.md](docs/qc-rules.md)** and **[docs/publication-profiles.md
 - **Frontend:** vanilla HTML, CSS and JavaScript — no framework, no build step
 - **Backend:** Netlify Functions (TypeScript): Gemini proxy, page fetcher, Google Pulse feed reader, workspace sync
 - **Storage:** browser storage + Netlify Blobs
-- **AI:** Google Gemini 2.5 with Google Search grounding (free Google AI Studio key; Netlify AI Gateway credits are never used)
+- **AI:** choose Gemini (live Google Search grounding), Claude, ChatGPT, OpenRouter, Groq, DeepSeek or Mistral; bring your own key; Netlify AI Gateway credits are never used
 - **Libraries:** marked, DOMPurify, mammoth (Word import, loaded on demand)
 
 Architecture notes: **[docs/architecture.md](docs/architecture.md)**

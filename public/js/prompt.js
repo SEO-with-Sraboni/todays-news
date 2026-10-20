@@ -87,9 +87,14 @@
 
     const user = [
       `Today is ${longDate} (${iso}). Current trading window: ${session(now)}.`,
-      topic
-        ? `Write today's news article about: ${topic}. Research it live first.`
-        : `Search the web for ${desk.focus}, pick the most newsworthy development from the last 24 hours, and write today's news article about it.`,
+      opts.grounded === false
+        ? (topic
+          ? `Write a news article about: ${topic}.`
+          : `Write a news article about ${desk.focus}.`) +
+          " You cannot browse the web: do not invent prices, levels, dates, quotes or events. Wherever a current figure or fact is needed, write [VERIFY: what to check] so the editor can fill it in from a live source."
+        : topic
+          ? `Write today's news article about: ${topic}. Research it live first.`
+          : `Search the web for ${desk.focus}, pick the most newsworthy development from the last 24 hours, and write today's news article about it.`,
       "",
       `Length: ${minWords}–${maxWords} words of body text.`,
       "",

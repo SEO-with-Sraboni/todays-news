@@ -36,7 +36,7 @@
     /\bin summary\b/i, /\blet'?s dive in\b/i, /\bseamless(ly)?\b/i,
   ];
 
-  const PLACEHOLDERS = [/\[insert[^\]]*\]/i, /\bTODO\b/, /\bTBD\b/, /lorem ipsum/i, /\[(source|citation) needed\]/i, /\bXX+\b/, /\{\{[^}]+\}\}/];
+  const PLACEHOLDERS = [/\[verify[^\]]*\]/i, /\[insert[^\]]*\]/i, /\bTODO\b/, /\bTBD\b/, /lorem ipsum/i, /\[(source|citation) needed\]/i, /\bXX+\b/, /\{\{[^}]+\}\}/];
 
   // ---------- helpers ----------
   const norm = (s) => (s || "").toLowerCase().replace(/[’']/g, "'").trim();

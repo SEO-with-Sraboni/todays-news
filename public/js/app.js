@@ -14,7 +14,27 @@
 
   // ---------------- workspace ----------------
   const WS_KEY = "tn:ws";
-  const DEFAULT_SETTINGS = { model: "gemini-2.5-flash", grounding: true, userKey: "", access: "", author: "", min: 600, max: 900, style: "", autoQc: true, theme: "dark" };
+  const DEFAULT_SETTINGS = { provider: "gemini", models: {}, keys: {}, grounding: true, access: "", author: "", min: 600, max: 900, style: "", autoQc: true, theme: "dark" };
+  const PROVIDERS = {
+    gemini: { label: "Gemini", model: "gemini-2.5-flash", key: "https://aistudio.google.com/app/apikey", env: "GEMINI_API_KEY", grounding: true,
+      suggest: ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.5-pro"], hint: "Free tier with daily limits. The only provider here with live Google Search, so it can report today's prices." },
+    anthropic: { label: "Claude", model: "claude-sonnet-5-5", key: "https://console.anthropic.com/settings/keys", env: "ANTHROPIC_API_KEY",
+      suggest: ["claude-sonnet-5-5", "claude-haiku-5-5", "claude-opus-5-5"], hint: "Paid, pay-as-you-go. Excellent writing; no live search here, so it marks figures as [VERIFY] for you to fill in." },
+    openai: { label: "ChatGPT", model: "gpt-5-mini", key: "https://platform.openai.com/api-keys", env: "OPENAI_API_KEY",
+      suggest: ["gpt-5-mini", "gpt-5"], hint: "Paid, pay-as-you-go (separate from a ChatGPT Plus subscription). No live search here; figures are marked [VERIFY]." },
+    openrouter: { label: "OpenRouter", model: "openrouter/auto", key: "https://openrouter.ai/keys", env: "OPENROUTER_API_KEY",
+      suggest: ["openrouter/auto"], hint: "One key for hundreds of models, including some free ones (IDs ending in :free). Load models to browse." },
+    groq: { label: "Groq", model: "llama-3.3-70b-versatile", key: "https://console.groq.com/keys", env: "GROQ_API_KEY",
+      suggest: ["llama-3.3-70b-versatile"], hint: "Free tier, very fast open models. No live search; figures are marked [VERIFY]." },
+    deepseek: { label: "DeepSeek", model: "deepseek-chat", key: "https://platform.deepseek.com/api_keys", env: "DEEPSEEK_API_KEY",
+      suggest: ["deepseek-chat", "deepseek-reasoner"], hint: "Low-cost paid API. No live search; figures are marked [VERIFY]." },
+    mistral: { label: "Mistral", model: "mistral-large-latest", key: "https://console.mistral.ai/api-keys", env: "MISTRAL_API_KEY",
+      suggest: ["mistral-large-latest", "mistral-small-latest"], hint: "Free experiment tier available. No live search; figures are marked [VERIFY]." },
+  };
+  const curProvider = () => (PROVIDERS[S().provider] ? S().provider : "gemini");
+  const curModel = () => (S().models || {})[curProvider()] || PROVIDERS[curProvider()].model;
+  const curKey = () => (S().keys || {})[curProvider()] || "";
+  const grounded = () => curProvider() === "gemini" && S().grounding;
 
   function readLS(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }
   function writeLS(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } }
@@ -34,6 +54,8 @@
 
   let ws = readLS(WS_KEY) || freshWorkspace();
   ws.settings = Object.assign({}, DEFAULT_SETTINGS, ws.settings);
+  if (ws.settings.userKey) { ws.settings.keys = Object.assign({}, ws.settings.keys, { gemini: ws.settings.userKey }); delete ws.settings.userKey; }
+  if (typeof ws.settings.model === "string") { ws.settings.models = Object.assign({ gemini: ws.settings.model }, ws.settings.models); delete ws.settings.model; }
   // Add any new seed publications introduced in later versions.
   SeedData.PROFILES.forEach((p) => { if (!ws.profiles.some((x) => x.id === p.id) && !(ws.deletedSeeds || []).includes(p.id)) ws.profiles.push(clone(p)); });
 
@@ -51,7 +73,7 @@
   // ---------------- api ----------------
   function headers(extra) {
     const h = Object.assign({}, extra || {});
-    if (S().userKey) h["x-user-gemini-key"] = S().userKey;
+    if (curKey()) h["x-provider-key"] = curKey();
     if (S().access) h["x-access-code"] = S().access;
     return h;
   }
@@ -61,7 +83,7 @@
     if (!r.ok) throw new Error(data.error || `Request failed (${r.status})`);
     return data;
   }
-  const gemini = (body) => api("/api/generate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(Object.assign({ model: S().model }, body)) });
+  const gemini = (body) => api("/api/generate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(Object.assign({ provider: curProvider(), model: curModel() }, body)) });
   const fetchPage = (url) => api("/api/page?url=" + encodeURIComponent(url));
 
   // ---------------- ui helpers ----------------
@@ -135,8 +157,8 @@
     try {
       serverStatus = await api("/api/status");
       if (serverStatus.accessCodeRequired && !S().access) { dot.className = "dot-status warn"; txt.textContent = "Access code needed"; }
-      else if (serverStatus.gemini || S().userKey) { dot.className = "dot-status ok"; txt.textContent = "Gemini ready"; }
-      else { dot.className = "dot-status err"; txt.textContent = "No AI key set"; }
+      else if ((serverStatus.providers || {})[curProvider()] || curKey()) { dot.className = "dot-status ok"; txt.textContent = PROVIDERS[curProvider()].label + " ready"; }
+      else { dot.className = "dot-status err"; txt.textContent = "No " + PROVIDERS[curProvider()].label + " key"; }
     } catch {
       serverStatus = null;
       dot.className = "dot-status warn"; txt.textContent = "Offline — QC only";
@@ -159,7 +181,7 @@
     if (!canSync()) { if (!quiet) toast(serverStatus && !serverStatus.cloudSync ? "Set ACCESS_CODE in Netlify to turn on cloud sync." : "Enter your access code first.", "err"); return; }
     try {
       const body = clone(ws);
-      body.settings.userKey = ""; body.settings.access = "";
+      body.settings.keys = {}; body.settings.access = "";
       const r = await api("/api/sync", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
       ws.syncedAt = r.syncedAt; save({ silent: true }); renderSyncText();
       if (!quiet) toast("Workspace synced to the cloud.", "ok");
@@ -171,7 +193,7 @@
       const { workspace } = await api("/api/sync");
       if (!workspace) { if (!auto) toast("Nothing in the cloud yet — use Sync now first.", ""); return; }
       if (auto && (workspace.updatedAt || 0) <= (ws.updatedAt || 0)) return;
-      const keep = { userKey: S().userKey, access: S().access, theme: S().theme };
+      const keep = { keys: S().keys, access: S().access, theme: S().theme };
       ws = Object.assign(freshWorkspace(), workspace);
       ws.settings = Object.assign({}, DEFAULT_SETTINGS, workspace.settings, keep);
       save({ silent: true }); renderPubSelect(); route(); renderSyncText();
@@ -213,6 +235,7 @@
   function renderWrite() {
     const p = profile();
     $("genPubName").textContent = p.name;
+    $("genModel").textContent = PROVIDERS[curProvider()].label + " · " + curModel() + (grounded() ? " + live search" : "");
     renderDesks();
     $("md").value = ws.doc.markdown || "";
     FIELD_IDS.forEach((id) => { $(id).value = (ws.doc.fields || {})[id] || (id === "fType" ? "news" : ""); });
@@ -285,11 +308,11 @@
   async function generate() {
     const p = profile();
     if (p.aiPolicy === "banned" && !confirm(`${p.name} does not accept AI-generated articles.\n\nGenerate a research draft anyway? You'll need to rewrite it in your own words before submitting.`)) return;
-    const pr = Prompt.build({ desk: ws.desk, topic: $("topic").value, author: S().author, minWords: +S().min, maxWords: +S().max, houseStyle: S().style, profile: p });
+    const pr = Prompt.build({ desk: ws.desk, topic: $("topic").value, author: S().author, minWords: +S().min, maxWords: +S().max, houseStyle: S().style, profile: p, grounded: grounded() });
     const btn = $("generate");
     busy(btn, true, "Researching…");
     try {
-      const data = await gemini({ prompt: pr.user, system: pr.system, grounding: S().grounding });
+      const data = await gemini({ prompt: pr.user, system: pr.system, grounding: grounded() });
       const text = data.text.replace(/^```(?:markdown|md)?\s*\n/i, "").replace(/\n```\s*$/i, "").trim() + "\n";
       $("md").value = text;
       ws.doc.sources = data.sources || [];
@@ -298,7 +321,7 @@
       applyFrontMatter(text, true);
       renderSources(); renderDocSource(); wordCount(); runQc();
       if (mode === "preview") renderPreview();
-      toast("Article ready — review the QC report.", "ok");
+      toast(data.grounded === false ? "Draft ready — fill in every [VERIFY] from a live source." : "Article ready — review the QC report.", "ok");
     } catch (e) { toast(e.message, "err"); }
     finally { busy(btn, false); }
   }
@@ -717,16 +740,52 @@
   // ---------------- SETTINGS ----------------
   function renderSettings() {
     const s = S();
-    $("sModel").value = s.model; $("sGrounding").checked = s.grounding; $("sUserKey").value = s.userKey; $("sAccess").value = s.access;
+    $("sProvider").value = curProvider();
+    renderProviderFields();
+    $("sGrounding").checked = s.grounding; $("sAccess").value = s.access;
     $("sAuthor").value = s.author; $("sMin").value = s.min; $("sMax").value = s.max; $("sStyle").value = s.style; $("sAutoQc").checked = s.autoQc;
   }
+  function renderProviderFields(pid) {
+    pid = pid || $("sProvider").value;
+    const P = PROVIDERS[pid];
+    $("sKey").value = (S().keys || {})[pid] || "";
+    $("sModel").value = (S().models || {})[pid] || P.model;
+    $("modelList").innerHTML = P.suggest.map((m) => `<option value="${esc(m)}"></option>`).join("");
+    $("sKeyLink").href = P.key;
+    const onServer = serverStatus && (serverStatus.providers || {})[pid];
+    $("sKeyWhere").textContent = onServer ? "set in Netlify — optional here" : "saved in this browser only";
+    $("groundRow").hidden = !P.grounding;
+    $("sProviderHint").innerHTML = esc(P.hint) + ` To use one key on every device, add <code>${P.env}</code> in Netlify instead. Netlify AI credits are never used.`;
+  }
+  function stashProviderFields(pid) {
+    ws.settings.keys = Object.assign({}, S().keys, { [pid]: $("sKey").value.trim() });
+    ws.settings.models = Object.assign({}, S().models, { [pid]: $("sModel").value.trim() || PROVIDERS[pid].model });
+  }
+  let shownProvider = null;
+  async function loadModels() {
+    const pid = $("sProvider").value, btn = $("loadModels");
+    stashProviderFields(pid);
+    busy(btn, true, "Loading…");
+    try {
+      const h = {}; const k = (S().keys || {})[pid]; if (k) h["x-provider-key"] = k; if (S().access) h["x-access-code"] = S().access;
+      const r = await fetch("/api/models?provider=" + pid, { headers: h });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error || "Couldn't load models.");
+      $("modelList").innerHTML = d.models.map((m) => `<option value="${esc(m.id)}">${esc(m.label !== m.id ? m.label : "")}</option>`).join("");
+      toast(`${d.models.length} models available — click the Model box to pick one.`, "ok");
+      $("sModel").focus();
+    } catch (e) { toast(e.message, "err"); }
+    finally { busy(btn, false); }
+  }
   function saveSettings() {
+    const pid = $("sProvider").value;
+    stashProviderFields(pid);
     Object.assign(ws.settings, {
-      model: $("sModel").value, grounding: $("sGrounding").checked, userKey: $("sUserKey").value.trim(), access: $("sAccess").value.trim(),
+      provider: pid, grounding: $("sGrounding").checked, access: $("sAccess").value.trim(),
       author: $("sAuthor").value.trim(), min: +$("sMin").value || 600, max: +$("sMax").value || 900, style: $("sStyle").value, autoQc: $("sAutoQc").checked,
     });
     save(); checkStatus().then(() => pullCloud(true));
-    toast("Settings saved.", "ok");
+    toast(`Saved — writing with ${PROVIDERS[pid].label} · ${curModel()}.`, "ok");
   }
 
   // ---------------- events ----------------
@@ -769,7 +828,7 @@
     let qcT;
     const sched = () => { if (!S().autoQc) return; clearTimeout(qcT); qcT = setTimeout(runQc, 450); };
     $("generate").onclick = generate;
-    $("copyPrompt").onclick = () => { const p = Prompt.build({ desk: ws.desk, topic: $("topic").value, author: S().author, minWords: +S().min, maxWords: +S().max, houseStyle: S().style, profile: profile() }); copy(p.system + "\n\n" + p.user, "Prompt copied."); };
+    $("copyPrompt").onclick = () => { const p = Prompt.build({ desk: ws.desk, topic: $("topic").value, author: S().author, minWords: +S().min, maxWords: +S().max, houseStyle: S().style, profile: profile(), grounded: grounded() }); copy(p.system + "\n\n" + p.user, "Prompt copied."); };
     $("md").addEventListener("input", () => { syncDocFromInputs(); wordCount(); sched(); });
     $("md").addEventListener("paste", () => setTimeout(() => applyFrontMatter($("md").value, false), 0));
     $("md").addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); runQc(); toast("QC re-run.", ""); } });
@@ -826,10 +885,13 @@
 
     // settings
     $("saveSettings").onclick = saveSettings;
-    $("clearKeys").onclick = () => { ws.settings.userKey = ""; ws.settings.access = ""; save({ silent: true }); renderSettings(); checkStatus(); toast("Saved keys cleared.", "ok"); };
+    $("clearKeys").onclick = () => { ws.settings.keys = {}; ws.settings.access = ""; save({ silent: true }); renderSettings(); checkStatus(); toast("Saved keys cleared.", "ok"); };
+    $("sProvider").addEventListener("focus", () => (shownProvider = $("sProvider").value));
+    $("sProvider").onchange = () => { if (shownProvider) stashProviderFields(shownProvider); shownProvider = $("sProvider").value; renderProviderFields(); };
+    $("loadModels").onclick = loadModels;
     $("syncPush").onclick = () => pushCloud(false);
     $("syncPull").onclick = () => pullCloud(false);
-    $("wsExport").onclick = () => { const b = clone(ws); b.settings.userKey = ""; b.settings.access = ""; download(`todays-news-workspace-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(b, null, 2), "application/json"); };
+    $("wsExport").onclick = () => { const b = clone(ws); b.settings.keys = {}; b.settings.access = ""; download(`todays-news-workspace-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(b, null, 2), "application/json"); };
     $("wsImport").onclick = () => $("wsFile").click();
     $("wsFile").onchange = async (e) => {
       const f = e.target.files[0]; e.target.value = "";
@@ -837,7 +899,7 @@
       try {
         const data = JSON.parse(await f.text());
         if (!Array.isArray(data.profiles)) throw new Error();
-        const keep = { userKey: S().userKey, access: S().access, theme: S().theme };
+        const keep = { keys: S().keys, access: S().access, theme: S().theme };
         ws = Object.assign(freshWorkspace(), data);
         ws.settings = Object.assign({}, DEFAULT_SETTINGS, data.settings, keep);
         save(); renderPubSelect(); route(); toast("Workspace imported.", "ok");

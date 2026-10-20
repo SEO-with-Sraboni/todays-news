@@ -1,17 +1,20 @@
-// Today's News — health check used by the status pill in the header.
-// Reports whether a server-side Gemini key and an access code are configured
-// (never the values themselves).
+// Today's News — health check used by the sidebar status.
+// Reports which providers have a server-side key the owner set (never the values).
+// Netlify AI Gateway keys, which spend Netlify credits, are not counted.
 import type { Config } from "@netlify/functions";
+import { PROVIDERS, serverKey, type ProviderId } from "../lib/providers.mts";
 
-export default async () =>
-  Response.json(
+export default async () => {
+  const providers = Object.fromEntries((Object.keys(PROVIDERS) as ProviderId[]).map((p) => [p, Boolean(serverKey(p))]));
+  return Response.json(
     {
-      // Netlify AI Gateway keys (which spend Netlify credits) are not counted.
-      gemini: Boolean(Netlify.env.get("GEMINI_API_KEY")) && !Netlify.env.get("GOOGLE_GEMINI_BASE_URL"),
+      providers,
+      gemini: providers.gemini,
       accessCodeRequired: Boolean(Netlify.env.get("ACCESS_CODE")),
       cloudSync: Boolean(Netlify.env.get("ACCESS_CODE")),
     },
     { headers: { "cache-control": "no-store" } },
   );
+};
 
 export const config: Config = { path: "/api/status", method: "GET" };
