@@ -282,8 +282,8 @@
                   <option value="gemini-2.0-flash">gemini-2.0-flash</option>
                 </select></label>
               <label class="check"><input id="sGrounding" type="checkbox"> Live Google Search grounding (needed for today's prices and news)</label>
-              <label class="field"><span>Personal Gemini key (optional)</span><input id="sUserKey" type="password" autocomplete="off" placeholder="Only if the site's key is rate-limited"></label>
-              <p class="hint">Stored only in this browser. The site's own key stays on the server. Free keys: <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a>.</p>
+              <label class="field"><span>Your Gemini API key</span><input id="sUserKey" type="password" autocomplete="off" placeholder="Paste your free Google AI Studio key"></label>
+              <p class="hint">Get a free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a>. Saved only in this browser. To use one key on every device, add it in Netlify as <code>GEMINI_API_KEY</code> instead. Netlify AI credits are never used.</p>
             </div>
           </div>
           <div class="card">
