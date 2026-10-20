@@ -1,0 +1,14 @@
+{
+  "name": "todays-news",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI market-news writer with a built-in content quality checker based on Google Search guidance.",
+  "scripts": {
+    "dev": "netlify dev",
+    "test": "node tests/qc.test.cjs"
+  },
+  "devDependencies": {
+    "@netlify/functions": "^4.0.0"
+  },
+  "license": "MIT"
+}
