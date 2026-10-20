@@ -16,8 +16,8 @@
   const WS_KEY = "tn:ws";
   const DEFAULT_SETTINGS = { provider: "gemini", models: {}, keys: {}, grounding: true, access: "", author: "", min: 600, max: 900, style: "", autoQc: true, theme: "dark" };
   const PROVIDERS = {
-    gemini: { label: "Gemini", model: "gemini-2.5-flash", key: "https://aistudio.google.com/app/apikey", env: "GEMINI_API_KEY", grounding: true,
-      suggest: ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.5-pro"], hint: "Free tier with daily limits. The only provider here with live Google Search, so it can report today's prices." },
+    gemini: { label: "Gemini", model: "gemini-3.8-flash", key: "https://aistudio.google.com/app/apikey", env: "GEMINI_API_KEY", grounding: true,
+      suggest: ["gemini-3.8-flash"], hint: "Free tier with daily limits. The only provider here with live Google Search, so it can report today's prices." },
     anthropic: { label: "Claude", model: "claude-sonnet-5-5", key: "https://console.anthropic.com/settings/keys", env: "ANTHROPIC_API_KEY",
       suggest: ["claude-sonnet-5-5", "claude-haiku-5-5", "claude-opus-5-5"], hint: "Paid, pay-as-you-go. Excellent writing; no live search here, so it marks figures as [VERIFY] for you to fill in." },
     openai: { label: "ChatGPT", model: "gpt-5-mini", key: "https://platform.openai.com/api-keys", env: "OPENAI_API_KEY",
@@ -83,7 +83,39 @@
     if (!r.ok) throw new Error(data.error || `Request failed (${r.status})`);
     return data;
   }
-  const gemini = (body) => api("/api/generate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(Object.assign({ provider: curProvider(), model: curModel() }, body)) });
+  const callAi = (body) => api("/api/generate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(Object.assign({ provider: curProvider(), model: curModel() }, body)) });
+  // If the chosen model has been retired, pick the newest suitable model the key can use and retry once.
+  const RETIRED = /no longer available|not found|does not exist|deprecated|decommissioned|not supported|model may not exist|invalid model/i;
+  function pickModel(pid, models, old) {
+    const ids = models.map((m) => m.id);
+    const bad = /lite|preview|exp|tts|image|embed|live|audio|vision|guard|whisper|realtime|search|codex|mini-high|nano|robotics|computer|gemma|aqa|learnlm/i;
+    const ver = (id) => { const m = id.match(/(\d+(?:\.\d+)?)/); return m ? parseFloat(m[1]) : 0; };
+    let pool = ids.filter((id) => !bad.test(id));
+    if (pid === "gemini") pool = pool.filter((id) => /^gemini-/.test(id) && /flash/.test(id));
+    else {
+      const family = (old || "").replace(/[-_.:]?\d.*$/, "");
+      const same = pool.filter((id) => family && id.startsWith(family));
+      if (same.length) pool = same;
+    }
+    pool.sort((a, b) => ver(b) - ver(a) || a.length - b.length);
+    return pool[0] || null;
+  }
+  async function gemini(body) {
+    try { return await callAi(body); }
+    catch (e) {
+      if (!RETIRED.test(e.message)) throw e;
+      const pid = curProvider(), old = curModel();
+      let list;
+      try { list = await api("/api/models?provider=" + pid); } catch { throw e; }
+      const next = pickModel(pid, list.models || [], old);
+      if (!next || next === old) throw e;
+      ws.settings.models = Object.assign({}, S().models, { [pid]: next });
+      save();
+      toast(`${old} was retired — switched to ${next}.`, "");
+      if ($("genModel")) $("genModel").textContent = PROVIDERS[pid].label + " · " + next + (grounded() ? " + live search" : "");
+      return await callAi(Object.assign({}, body, { model: next }));
+    }
+  }
   const fetchPage = (url) => api("/api/page?url=" + encodeURIComponent(url));
 
   // ---------------- ui helpers ----------------

@@ -11,7 +11,7 @@ export const PROVIDERS: Record<ProviderId, {
   chatUrl?: string; modelsUrl: string; defaultModel: string; json: boolean;
 }> = {
   gemini: { label: "Gemini", env: "GEMINI_API_KEY", gatewayEnv: "GOOGLE_GEMINI_BASE_URL", kind: "gemini",
-    modelsUrl: "https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", defaultModel: "gemini-2.5-flash", json: true },
+    modelsUrl: "https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", defaultModel: "gemini-3.8-flash", json: true },
   anthropic: { label: "Claude", env: "ANTHROPIC_API_KEY", gatewayEnv: "ANTHROPIC_BASE_URL", kind: "anthropic",
     chatUrl: "https://api.anthropic.com/v1/messages", modelsUrl: "https://api.anthropic.com/v1/models?limit=100", defaultModel: "claude-sonnet-5-5", json: false },
   openai: { label: "ChatGPT", env: "OPENAI_API_KEY", gatewayEnv: "OPENAI_BASE_URL", kind: "openai",
