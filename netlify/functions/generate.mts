@@ -54,7 +54,12 @@ export default async (req: Request, _context: Context) => {
   if (body.system) payload.systemInstruction = { parts: [{ text: body.system.toString().slice(0, 20_000) }] };
   if (body.grounding !== false) payload.tools = [{ google_search: {} }];
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+  // With no key of your own, Netlify AI Gateway injects GEMINI_API_KEY plus
+  // GOOGLE_GEMINI_BASE_URL (billed in Netlify credits). Once you set your own
+  // free Google AI Studio key, Netlify stops injecting and calls go to Google directly.
+  const userKey = Boolean(req.headers.get("x-user-gemini-key"));
+  const base = (!userKey && Netlify.env.get("GOOGLE_GEMINI_BASE_URL")) || "https://generativelanguage.googleapis.com";
+  const url = `${base.replace(/\/+$/, "")}/v1beta/models/${model}:generateContent`;
 
   let res: Response;
   try {
