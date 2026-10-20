@@ -2,7 +2,7 @@
 
 **An AI market-news writer with a built-in content quality checker.** One click researches today's biggest market story with live Google Search, writes a publish-ready article, and instantly audits it against Google Search guidance — so mistakes are caught before anything goes live.
 
-**Live demo:** https://todays-news.netlify.app
+**Live demo:** https://todays-news-desk.netlify.app
 
 > Built by **Sraboni Sarker**, SEO & GEO Strategist — [LinkedIn](https://www.linkedin.com/in/srabonisarker)
 
