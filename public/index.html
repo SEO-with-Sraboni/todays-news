@@ -1,196 +1,406 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Today's News</title>
-  <meta name="description" content="Today's News: an AI market-news writer with a built-in content quality checker based on Google Search guidance.">
-  <meta name="theme-color" content="#f4efe6">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23161412'/%3E%3Ctext x='16' y='22' font-family='Georgia' font-size='15' font-weight='700' fill='%23f4efe6' text-anchor='middle'%3ETN%3C/text%3E%3C/svg%3E">
+  <meta name="description" content="Today's News: an all-in-one financial news desk — write for multiple publications, follow each site's contributor rules, and QC drafts and published articles against Google Search guidance.">
+  <meta name="theme-color" content="#0b0d11">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b0d11'/%3E%3Ctext x='16' y='21.5' font-family='Georgia' font-size='14' font-weight='700' fill='%23d6b25e' text-anchor='middle'%3ETN%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <a class="skip" href="#editor">Skip to editor</a>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-desk" viewBox="0 0 24 24"><path d="M3 10.5 12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-write" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/></symbol>
+    <symbol id="i-batch" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/><path d="m16 17 2 2 3-4"/></symbol>
+    <symbol id="i-pubs" viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 9h8M8 13h8M8 17h5"/></symbol>
+    <symbol id="i-lib" viewBox="0 0 24 24"><path d="M4 5h4v15H4zM10 5h4v15h-4zM16 6l3.5-1 3 14-3.5 1z"/></symbol>
+    <symbol id="i-policy" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2-6 4 12 2-6h6"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 0 1-.6-9A6 6 0 0 1 18 8.5 4.8 4.8 0 0 1 17.5 18z"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  </svg>
 
-  <header class="masthead">
-    <div class="brand">
-      <span class="mark" aria-hidden="true">TN</span>
-      <div>
-        <h1 class="brand-name">Today's News</h1>
-        <p class="brand-sub">Market wire · built-in content QC</p>
+  <div class="app">
+    <aside class="side" id="side">
+      <div class="side-brand">
+        <span class="mark">TN</span>
+        <div><strong>Today's News</strong><small>Financial news desk</small></div>
       </div>
-    </div>
-    <div class="wire">
-      <span id="status" class="pill pill-idle">Checking…</span>
-      <span id="clock" class="mono">--:--:--</span>
-      <span id="session" class="tag">—</span>
-      <button class="icon-btn" id="openSettings" aria-label="Settings" title="Settings">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
-      </button>
-    </div>
-  </header>
-
-  <section class="brief" aria-label="Today's brief">
-    <div><span class="label">Today</span><strong id="briefDate">—</strong></div>
-    <div><span class="label">Edition</span><strong id="briefEdition">—</strong></div>
-    <div class="grow"><span class="label">Suggested angle</span><strong id="briefAngle">—</strong></div>
-  </section>
-
-  <main class="layout">
-    <!-- WRITE COLUMN -->
-    <div class="col-write">
-      <section class="card generate">
-        <div class="generate-head">
-          <div>
-            <h2>Write today's news</h2>
-            <p class="muted">Gemini researches today's story live, writes it in house format, then QC checks it.</p>
-          </div>
-          <button id="generate" class="btn btn-primary btn-lg">
-            <span class="btn-label">Generate</span><span class="spinner" aria-hidden="true"></span>
-          </button>
-        </div>
-        <div class="desks" role="radiogroup" aria-label="Pick a desk" id="desks"></div>
-        <div class="row">
-          <label class="field grow">
-            <span>Topic (optional)</span>
-            <input id="topic" type="text" placeholder="Leave empty to let Gemini find today's biggest story">
-          </label>
-          <button id="copyPrompt" class="btn btn-ghost" title="Copy the full prompt to use in any chat model">Copy prompt</button>
-        </div>
-      </section>
-
-      <details class="card seo" open>
-        <summary><h2>SEO fields</h2><span class="muted">auto-filled from the article, edit freely</span></summary>
-        <div class="grid2">
-          <label class="field span2"><span>Title tag <em class="count" data-for="fTitle">0</em></span><input id="fTitle" type="text" maxlength="200"></label>
-          <label class="field span2"><span>Meta description <em class="count" data-for="fMeta">0</em></span><textarea id="fMeta" rows="2" maxlength="400"></textarea></label>
-          <label class="field"><span>Focus keyword</span><input id="fKeyword" type="text"></label>
-          <label class="field"><span>Secondary keywords</span><input id="fSecondary" type="text" placeholder="comma, separated"></label>
-          <label class="field"><span>URL slug</span><input id="fSlug" type="text"></label>
-          <label class="field"><span>Content type</span>
-            <select id="fType"><option value="news">News article</option><option value="analysis">Analysis</option><option value="brief">Short brief</option></select>
-          </label>
-        </div>
-      </details>
-
-      <section class="card article" id="editor">
-        <div class="article-head">
-          <div class="seg" role="tablist">
-            <button role="tab" aria-selected="true" data-view="edit" class="seg-btn is-on">Markdown</button>
-            <button role="tab" aria-selected="false" data-view="preview" class="seg-btn">Preview</button>
-          </div>
-          <span id="wordCount" class="muted mono">0 words</span>
-          <div class="actions">
-            <button class="btn btn-ghost" id="importUrl">Import URL</button>
-            <button class="btn btn-ghost" id="copyDocs">Copy for Google Docs</button>
-            <button class="btn btn-ghost" id="copyMd">Copy Markdown</button>
-            <button class="btn btn-ghost danger" id="clear">Clear</button>
-          </div>
-        </div>
-        <textarea id="md" class="md" spellcheck="true" placeholder="Click Generate, or paste your own draft here to QC it. Press Ctrl + Enter to re-run QC."></textarea>
-        <div id="preview" class="preview prose" hidden></div>
-      </section>
-
-      <section class="card sources">
-        <h2>Sources</h2>
-        <ol id="sources" class="source-list"><li class="muted">Live sources used for the article will show up here after you generate.</li></ol>
-      </section>
-
-      <section class="card log">
-        <h2>Wire log</h2>
-        <ul id="wireLog" class="log-list"><li class="muted">Nothing generated yet this week.</li></ul>
-      </section>
-    </div>
-
-    <!-- QC COLUMN -->
-    <aside class="col-qc" aria-label="Content QC report">
-      <section class="card qc">
-        <div class="qc-head">
-          <div class="ring" id="ring" style="--v:0"><span id="score">—</span></div>
-          <div>
-            <h2>Content QC</h2>
-            <p id="grade" class="grade">Waiting for an article</p>
-            <p class="counts mono"><span class="c-err" id="cErr">0</span> errors · <span class="c-warn" id="cWarn">0</span> warnings · <span class="c-pass" id="cPass">0</span> passed</p>
-          </div>
-        </div>
-        <div class="qc-actions">
-          <div class="filters" role="radiogroup" aria-label="Filter findings">
-            <button class="chip is-on" data-filter="issues">Issues</button>
-            <button class="chip" data-filter="all">All</button>
-            <button class="chip" data-filter="pass">Passed</button>
-          </div>
-          <button class="btn btn-ghost" id="recheck">Re-check</button>
-          <button class="btn btn-ghost" id="aiReview" title="Ask Gemini for an editor's second opinion">AI review</button>
-        </div>
-        <ul id="findings" class="findings"></ul>
-        <div id="aiOut" class="ai-out prose" hidden></div>
-        <p class="fineprint">Click an issue to jump to it in the editor. Checks follow Google Search Central guidance; they're guidance, not a ranking guarantee.</p>
-      </section>
+      <nav class="nav" aria-label="Main">
+        <a href="#/desk" data-route="desk"><svg><use href="#i-desk"/></svg>Desk</a>
+        <a href="#/write" data-route="write"><svg><use href="#i-write"/></svg>Write &amp; QC</a>
+        <a href="#/batch" data-route="batch"><svg><use href="#i-batch"/></svg>Batch QC</a>
+        <a href="#/pubs" data-route="pubs"><svg><use href="#i-pubs"/></svg>Publications</a>
+        <a href="#/library" data-route="library"><svg><use href="#i-lib"/></svg>Library</a>
+        <div class="nav-sep">Reference</div>
+        <a href="#/policies" data-route="policies"><svg><use href="#i-policy"/></svg>Policy Library</a>
+        <a href="#/pulse" data-route="pulse"><svg><use href="#i-pulse"/></svg>Google Pulse</a>
+        <a href="#/settings" data-route="settings"><svg><use href="#i-settings"/></svg>Settings</a>
+      </nav>
+      <div class="side-foot">
+        <div class="status-row"><span id="status" class="dot-status idle"></span><span id="statusText">Checking…</span></div>
+        <div class="status-row"><svg class="ic"><use href="#i-cloud"/></svg><span id="syncText">Local only</span></div>
+      </div>
     </aside>
-  </main>
 
-  <footer class="foot">
-    <span>Today's News — built by Sraboni Sarker</span>
-    <a href="https://github.com/SEO-with-Sraboni/todays-news" rel="noopener">Source on GitHub</a>
-  </footer>
-
-  <!-- SETTINGS -->
-  <dialog id="settings" class="sheet">
-    <form method="dialog" class="sheet-body">
-      <div class="sheet-head"><h2>Settings</h2><button class="icon-btn" value="close" aria-label="Close">✕</button></div>
-
-      <fieldset>
-        <legend>AI provider</legend>
-        <label class="field"><span>Provider</span>
-          <select id="sProvider">
-            <option value="gemini">Gemini — free (server key)</option>
-            <option value="claude" disabled>Claude — coming soon (paid, your own key)</option>
-          </select>
-        </label>
-        <label class="field"><span>Model</span>
-          <select id="sModel">
-            <option value="gemini-2.5-flash">gemini-2.5-flash (recommended)</option>
-            <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite (fastest)</option>
-            <option value="gemini-2.5-pro">gemini-2.5-pro (higher quality, slower)</option>
-            <option value="gemini-2.0-flash">gemini-2.0-flash</option>
-          </select>
-        </label>
-        <label class="check"><input id="sGrounding" type="checkbox" checked> Use live Google Search grounding (needed for today's prices and news)</label>
-        <label class="field"><span>Personal Gemini key (optional override)</span>
-          <input id="sUserKey" type="password" autocomplete="off" placeholder="Only if the shared key is rate-limited">
-        </label>
-        <p class="hint">The site's key lives in a server function and is never sent to the browser. A personal key is stored only in this browser and sent straight to the function over HTTPS. Get a free one at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a>.</p>
-        <label class="field"><span>Access code</span><input id="sAccess" type="password" autocomplete="off" placeholder="Only if the site owner set one"></label>
-      </fieldset>
-
-      <fieldset>
-        <legend>Writing</legend>
-        <label class="field"><span>Author byline</span><input id="sAuthor" type="text" placeholder="e.g. Sraboni Sarker"></label>
-        <div class="grid2">
-          <label class="field"><span>Min words</span><input id="sMin" type="number" min="200" max="2000" step="50" value="600"></label>
-          <label class="field"><span>Max words</span><input id="sMax" type="number" min="300" max="3000" step="50" value="900"></label>
+    <div class="main">
+      <header class="top">
+        <button class="icon-btn only-mobile" id="menuBtn" aria-label="Menu"><svg><use href="#i-menu"/></svg></button>
+        <div class="top-title"><h1 id="viewTitle">Desk</h1><span id="viewSub" class="muted"></span></div>
+        <div class="top-right">
+          <label class="pub-switch" title="Publication you're writing for">
+            <span class="pub-dot" id="pubDot"></span>
+            <select id="pubSelect" aria-label="Active publication"></select>
+          </label>
+          <span class="clock mono" id="clock">--:--</span>
+          <span class="tag" id="session">—</span>
+          <button class="icon-btn" id="themeBtn" aria-label="Toggle theme"><svg><use href="#i-sun"/></svg></button>
         </div>
-        <label class="field"><span>House style notes</span><textarea id="sStyle" rows="3" placeholder="e.g. Use British spelling. Always mention the DXY level."></textarea></label>
-        <label class="check"><input id="sAutoQc" type="checkbox" checked> Run QC automatically while I edit</label>
-      </fieldset>
+      </header>
 
+      <!-- DESK -->
+      <section class="view" data-view="desk">
+        <div class="hero">
+          <div>
+            <p class="eyebrow" id="deskDate">—</p>
+            <h2 class="display" id="deskHello">Good day.</h2>
+            <p class="muted lead">Suggested angle: <strong id="deskAngle">—</strong></p>
+          </div>
+          <div class="hero-actions">
+            <a class="btn btn-gold btn-lg" href="#/write" id="deskWrite"><svg><use href="#i-spark"/></svg>Write today's story</a>
+            <a class="btn btn-ghost" href="#/batch">QC published URLs</a>
+          </div>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><span class="label">Saved this week</span><strong id="kWeek">0</strong><small class="muted">articles &amp; reports</small></div>
+          <div class="kpi"><span class="label">Average QC score</span><strong id="kAvg">—</strong><small class="muted">last 20 saved</small></div>
+          <div class="kpi"><span class="label">Publications ready</span><strong id="kPubs">0</strong><small class="muted" id="kPubsSub">rules imported</small></div>
+          <div class="kpi"><span class="label">Edition</span><strong id="kEdition">—</strong><small class="muted" id="kSession">—</small></div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head"><h3>Recent work</h3><a href="#/library" class="link">Library →</a></div>
+            <ul class="rows" id="deskRecent"></ul>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Google Pulse</h3><a href="#/pulse" class="link">All updates →</a></div>
+            <ul class="rows" id="deskPulse"><li class="muted">Loading…</li></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- WRITE & QC -->
+      <section class="view" data-view="write">
+        <div class="workspace">
+          <div class="ws-main">
+            <div class="card generate">
+              <div class="gen-head">
+                <div>
+                  <h3>Generate</h3>
+                  <p class="muted small">Live Google Search research, written to <strong id="genPubName">house style</strong> rules.</p>
+                </div>
+                <button id="generate" class="btn btn-gold btn-lg"><span class="spinner"></span><span class="btn-label">Generate</span></button>
+              </div>
+              <div id="aiPolicyBanner" class="banner" hidden></div>
+              <div class="chips" id="desks" role="radiogroup" aria-label="Desk"></div>
+              <div class="row">
+                <input id="topic" type="text" placeholder="Optional topic — leave empty to let Gemini find today's biggest story">
+                <button id="copyPrompt" class="btn btn-ghost">Copy prompt</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <div class="seg" role="tablist">
+                  <button class="seg-btn is-on" data-mode="edit">Markdown</button>
+                  <button class="seg-btn" data-mode="preview">Preview</button>
+                </div>
+                <span id="wordCount" class="muted mono small">0 words</span>
+                <div class="tools">
+                  <button class="btn btn-sm" id="tUrl">Import URL</button>
+                  <button class="btn btn-sm" id="tFile">Upload file</button>
+                  <button class="btn btn-sm" id="tHtml">Paste HTML</button>
+                  <button class="btn btn-sm" id="tSample">Sample</button>
+                  <button class="btn btn-sm" id="tSave">Save</button>
+                  <div class="menu">
+                    <button class="btn btn-sm" id="tMore" aria-haspopup="true">More ▾</button>
+                    <div class="menu-pop" id="moreMenu" hidden>
+                      <button data-act="docs">Copy for Google Docs</button>
+                      <button data-act="md">Copy Markdown</button>
+                      <button data-act="sheets">Copy report for Google Sheets</button>
+                      <button data-act="csv">Download report (CSV)</button>
+                      <button data-act="clear" class="danger">Clear document</button>
+                    </div>
+                  </div>
+                </div>
+                <input type="file" id="fileInput" accept=".docx,.md,.markdown,.txt,.html,.htm" hidden>
+              </div>
+              <div id="docSource" class="doc-source" hidden></div>
+              <textarea id="md" class="md" spellcheck="true" placeholder="Generate an article, import a URL or file, or paste your own draft. Ctrl + Enter re-runs QC."></textarea>
+              <article id="preview" class="preview prose" hidden></article>
+            </div>
+
+            <details class="card seo" open>
+              <summary><h3>SEO fields</h3><span class="muted small">auto-filled from the article — edit freely</span></summary>
+              <div class="form-grid">
+                <label class="field span2"><span>Title tag <em class="count" data-for="fTitle">0</em></span><input id="fTitle" type="text"></label>
+                <label class="field span2"><span>Meta description <em class="count" data-for="fMeta">0</em></span><textarea id="fMeta" rows="2"></textarea></label>
+                <label class="field"><span>Focus keyword</span><input id="fKeyword" type="text"></label>
+                <label class="field"><span>Secondary keywords</span><input id="fSecondary" type="text" placeholder="comma, separated"></label>
+                <label class="field"><span>URL slug</span><input id="fSlug" type="text"></label>
+                <label class="field"><span>Content type</span><select id="fType"><option value="news">News article</option><option value="analysis">Analysis</option><option value="brief">Short brief</option></select></label>
+              </div>
+            </details>
+
+            <div class="card">
+              <h3>Sources</h3>
+              <ol id="sources" class="sources"></ol>
+            </div>
+          </div>
+
+          <aside class="ws-side">
+            <div class="card qc">
+              <div class="qc-head">
+                <div class="ring" id="ring"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" class="track"/><circle cx="40" cy="40" r="34" class="bar" id="ringBar"/></svg><span id="score">—</span></div>
+                <div>
+                  <p class="eyebrow">Content QC</p>
+                  <h3 id="grade">Waiting for an article</h3>
+                  <p class="counts mono small"><b class="c-err" id="cErr">0</b> errors · <b class="c-warn" id="cWarn">0</b> warnings · <b class="c-pass" id="cPass">0</b> passed</p>
+                </div>
+              </div>
+              <div class="qc-bar">
+                <div class="chips small">
+                  <button class="chip is-on" data-filter="issues">Issues</button>
+                  <button class="chip" data-filter="site">Site rules</button>
+                  <button class="chip" data-filter="all">All</button>
+                  <button class="chip" data-filter="pass">Passed</button>
+                </div>
+                <div class="qc-actions">
+                  <button class="btn btn-sm" id="recheck">Re-check</button>
+                  <button class="btn btn-sm btn-outline-gold" id="aiReview"><svg><use href="#i-spark"/></svg>AI review</button>
+                </div>
+              </div>
+              <ul id="findings" class="findings"></ul>
+              <div id="aiOut" class="ai-out prose" hidden></div>
+              <p class="fine">Click an issue to jump to it. Google checks follow Search Central docs; site checks follow the selected publication's rules. Guidance, not a guarantee.</p>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- BATCH -->
+      <section class="view" data-view="batch">
+        <div class="card">
+          <div class="card-head"><h3>QC published articles</h3><span class="muted small">Up to 10 URLs · content + page SEO + selected publication's rules</span></div>
+          <textarea id="batchUrls" rows="5" placeholder="https://example.com/news/article-one&#10;https://example.com/news/article-two"></textarea>
+          <div class="row end">
+            <label class="check"><input type="checkbox" id="batchSite" checked> Apply <span id="batchPubName">selected publication</span> rules</label>
+            <button class="btn btn-ghost" id="batchCsv" disabled>Download CSV</button>
+            <button class="btn btn-ghost" id="batchSheets" disabled>Copy for Google Sheets</button>
+            <button class="btn btn-gold" id="batchRun"><span class="spinner"></span><span class="btn-label">Run checks</span></button>
+          </div>
+        </div>
+        <div class="card table-card">
+          <table class="table" id="batchTable">
+            <thead><tr><th>Page</th><th>Score</th><th>Errors</th><th>Warnings</th><th>Top issue</th><th></th></tr></thead>
+            <tbody><tr><td colspan="6" class="muted center">Add URLs above and run checks.</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- PUBLICATIONS -->
+      <section class="view" data-view="pubs">
+        <div class="view-head">
+          <p class="muted">Each publication keeps its own contributor rules. Writing and QC follow the one selected in the top bar.</p>
+          <button class="btn btn-gold" id="addPub">+ Add publication</button>
+        </div>
+        <div class="pub-grid" id="pubGrid"></div>
+      </section>
+
+      <!-- LIBRARY -->
+      <section class="view" data-view="library">
+        <div class="view-head">
+          <div class="row">
+            <select id="libFilter"><option value="">All publications</option></select>
+            <input id="libSearch" type="search" placeholder="Search titles…">
+          </div>
+          <button class="btn btn-ghost" id="libCsv">Export list (CSV)</button>
+        </div>
+        <div class="card table-card">
+          <table class="table" id="libTable">
+            <thead><tr><th>Title</th><th>Publication</th><th>Type</th><th>Score</th><th>Saved</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- POLICIES -->
+      <section class="view" data-view="policies">
+        <p class="muted">The Google guidance behind every QC check, plus each publication's own guidelines.</p>
+        <div id="policyList" class="policy-list"></div>
+      </section>
+
+      <!-- PULSE -->
+      <section class="view" data-view="pulse">
+        <div class="view-head">
+          <div class="chips" id="pulseFilters">
+            <button class="chip is-on" data-k="all">All</button>
+            <button class="chip" data-k="ranking">Ranking updates</button>
+            <button class="chip" data-k="google">Google blog</button>
+            <button class="chip" data-k="docs">Doc changes</button>
+            <button class="chip" data-k="industry">Industry</button>
+          </div>
+          <div class="row">
+            <a class="btn btn-ghost" href="https://status.search.google.com/" target="_blank" rel="noopener">Google Search status ↗</a>
+            <button class="btn btn-ghost" id="pulseRefresh">Refresh</button>
+          </div>
+        </div>
+        <ul class="pulse" id="pulseList"><li class="muted">Loading…</li></ul>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="view" data-view="settings">
+        <div class="grid-2">
+          <div class="card">
+            <h3>AI</h3>
+            <div class="stack">
+              <label class="field"><span>Provider</span><select id="sProvider"><option value="gemini">Gemini — free</option><option disabled>Claude — coming soon (paid, your own key)</option></select></label>
+              <label class="field"><span>Model</span>
+                <select id="sModel">
+                  <option value="gemini-2.5-flash">gemini-2.5-flash (recommended)</option>
+                  <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite (fastest)</option>
+                  <option value="gemini-2.5-pro">gemini-2.5-pro (best quality, slower)</option>
+                  <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+                </select></label>
+              <label class="check"><input id="sGrounding" type="checkbox"> Live Google Search grounding (needed for today's prices and news)</label>
+              <label class="field"><span>Personal Gemini key (optional)</span><input id="sUserKey" type="password" autocomplete="off" placeholder="Only if the site's key is rate-limited"></label>
+              <p class="hint">Stored only in this browser. The site's own key stays on the server. Free keys: <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a>.</p>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Access &amp; sync</h3>
+            <div class="stack">
+              <label class="field"><span>Access code</span><input id="sAccess" type="password" autocomplete="off" placeholder="Set ACCESS_CODE in Netlify, then enter it here"></label>
+              <p class="hint">With an access code, only you can generate, and your publications and library sync across devices.</p>
+              <div class="row">
+                <button class="btn btn-ghost" id="syncPush">Sync now</button>
+                <button class="btn btn-ghost" id="syncPull">Pull from cloud</button>
+              </div>
+              <div class="row">
+                <button class="btn btn-ghost" id="wsExport">Export workspace</button>
+                <button class="btn btn-ghost" id="wsImport">Import workspace</button>
+                <input type="file" id="wsFile" accept=".json" hidden>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Writing</h3>
+            <div class="stack">
+              <label class="field"><span>Author byline</span><input id="sAuthor" type="text" placeholder="Your name"></label>
+              <div class="form-grid">
+                <label class="field"><span>Default min words</span><input id="sMin" type="number" min="150" step="50"></label>
+                <label class="field"><span>Default max words</span><input id="sMax" type="number" min="200" step="50"></label>
+              </div>
+              <label class="field"><span>House style notes</span><textarea id="sStyle" rows="3" placeholder="e.g. Always mention the DXY level."></textarea></label>
+              <label class="check"><input id="sAutoQc" type="checkbox"> Re-run QC automatically while I type</label>
+            </div>
+          </div>
+          <div class="card">
+            <h3>About</h3>
+            <p class="muted small">Today's News — an all-in-one financial news desk with a built-in content QC engine. Built by Sraboni Sarker.</p>
+            <p class="small"><a class="link" href="https://github.com/SEO-with-Sraboni/todays-news" target="_blank" rel="noopener">Source on GitHub ↗</a></p>
+            <button class="btn btn-ghost danger" id="clearKeys">Clear saved keys</button>
+          </div>
+        </div>
+        <div class="row end"><button class="btn btn-gold" id="saveSettings">Save settings</button></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Publication editor -->
+  <dialog id="pubDlg" class="sheet wide">
+    <form method="dialog" class="sheet-body" id="pubForm">
+      <div class="sheet-head"><h2 id="pubDlgTitle">Publication</h2><button class="icon-btn" value="cancel" aria-label="Close">✕</button></div>
+      <div class="form-grid">
+        <label class="field"><span>Name</span><input name="name" required></label>
+        <label class="field"><span>Domain</span><input name="domain" placeholder="example.com"></label>
+        <label class="field"><span>Focus</span><input name="category" placeholder="Forex · Crypto"></label>
+        <label class="field"><span>AI-content policy</span>
+          <select name="aiPolicy"><option value="unknown">Unknown — check before submitting</option><option value="allowed">Allowed</option><option value="disclose">Allowed with disclosure</option><option value="banned">Not allowed</option></select></label>
+        <label class="field span2"><span>Guidelines URL</span>
+          <div class="row"><input name="guidelinesUrl" type="url" placeholder="https://…/contributor-guidelines"><button type="button" class="btn btn-outline-gold" id="importRules"><span class="spinner"></span><span class="btn-label">Import rules with AI</span></button></div></label>
+        <label class="field span2"><span>AI policy note</span><input name="aiPolicyNote" placeholder="e.g. Disclose AI assistance at the end of the article"></label>
+      </div>
+      <div id="importNote" class="banner" hidden></div>
+      <h4>Rules</h4>
+      <div class="form-grid three">
+        <label class="field"><span>Min words</span><input name="minWords" type="number"></label>
+        <label class="field"><span>Max words</span><input name="maxWords" type="number"></label>
+        <label class="field"><span>Title max chars</span><input name="titleMaxChars" type="number"></label>
+        <label class="field"><span>Min source links</span><input name="minLinks" type="number"></label>
+        <label class="field"><span>Max links</span><input name="maxLinks" type="number"></label>
+        <label class="field"><span>Bio max words</span><input name="bioMaxWords" type="number"></label>
+        <label class="field"><span>Spelling</span><select name="spelling"><option value="any">Any</option><option value="US">US English</option><option value="UK">UK English</option></select></label>
+        <label class="field"><span>Heading case</span><select name="headingCase"><option value="any">Any</option><option value="sentence">Sentence case</option><option value="title">Title Case</option></select></label>
+        <label class="field"><span>First person</span><select name="firstPerson"><option value="any">Allowed</option><option value="avoid">Avoid</option></select></label>
+      </div>
+      <div class="checks">
+        <label class="check"><input type="checkbox" name="requireSources"> Sources required</label>
+        <label class="check"><input type="checkbox" name="noAffiliateLinks"> No affiliate links</label>
+        <label class="check"><input type="checkbox" name="noPromotional"> No promotional content</label>
+        <label class="check"><input type="checkbox" name="disclaimerRequired"> Disclaimer required</label>
+        <label class="check"><input type="checkbox" name="bioRequired"> Author bio required</label>
+      </div>
+      <div class="form-grid">
+        <label class="field span2"><span>Disclaimer text</span><input name="disclaimerText"></label>
+        <label class="field"><span>Required sections <em>one per line</em></span><textarea name="requiredSections" rows="3"></textarea></label>
+        <label class="field"><span>Banned words &amp; phrases <em>one per line</em></span><textarea name="bannedPhrases" rows="3"></textarea></label>
+        <label class="field"><span>Required phrases <em>one per line</em></span><textarea name="requiredPhrases" rows="3"></textarea></label>
+        <label class="field"><span>Other rules (checked by AI review) <em>one per line</em></span><textarea name="otherRules" rows="3"></textarea></label>
+        <label class="field span2"><span>Notes</span><textarea name="notes" rows="2" placeholder="Pitch email, editor name, payment terms…"></textarea></label>
+      </div>
       <div class="sheet-foot">
-        <button class="btn btn-ghost danger" id="clearKeys" type="button">Clear saved keys</button>
-        <button class="btn btn-primary" value="save" id="saveSettings">Save</button>
+        <button type="button" class="btn btn-ghost danger" id="delPub">Delete</button>
+        <div class="row"><button class="btn btn-ghost" value="cancel">Cancel</button><button class="btn btn-gold" value="save" id="savePub">Save publication</button></div>
       </div>
     </form>
   </dialog>
 
-  <!-- IMPORT -->
-  <dialog id="importDlg" class="sheet small">
+  <!-- Paste guidelines fallback -->
+  <dialog id="pasteDlg" class="sheet">
     <form method="dialog" class="sheet-body">
-      <div class="sheet-head"><h2>Import a page to QC</h2><button class="icon-btn" value="close" aria-label="Close">✕</button></div>
-      <label class="field"><span>Page URL</span><input id="importInput" type="url" placeholder="https://example.com/article"></label>
-      <p class="hint">Fetches the page through the site's server function, pulls out the title, meta description and article text, and runs QC on it.</p>
-      <div class="sheet-foot"><button class="btn btn-primary" value="import" id="doImport">Import</button></div>
+      <div class="sheet-head"><h2>Paste guidelines</h2><button class="icon-btn" value="cancel" aria-label="Close">✕</button></div>
+      <p class="hint" id="pasteWhy">The page couldn't be read automatically. Copy the guidelines text from the site and paste it here.</p>
+      <textarea id="pasteText" rows="10" placeholder="Paste the contributor guidelines…"></textarea>
+      <div class="sheet-foot"><span></span><button class="btn btn-gold" value="ok">Extract rules</button></div>
+    </form>
+  </dialog>
+
+  <!-- Import URL -->
+  <dialog id="urlDlg" class="sheet">
+    <form method="dialog" class="sheet-body">
+      <div class="sheet-head"><h2>Import a published article</h2><button class="icon-btn" value="cancel" aria-label="Close">✕</button></div>
+      <input id="urlInput" type="url" placeholder="https://example.com/news/article">
+      <p class="hint">Checks the article text plus page SEO: canonical, schema, Open Graph, image alt text, dates.</p>
+      <div class="sheet-foot"><span></span><button class="btn btn-gold" value="ok">Import &amp; check</button></div>
+    </form>
+  </dialog>
+
+  <!-- Paste HTML -->
+  <dialog id="htmlDlg" class="sheet">
+    <form method="dialog" class="sheet-body">
+      <div class="sheet-head"><h2>Paste page HTML source</h2><button class="icon-btn" value="cancel" aria-label="Close">✕</button></div>
+      <textarea id="htmlInput" rows="10" placeholder="Right-click a page → View page source → copy all → paste here"></textarea>
+      <div class="sheet-foot"><span></span><button class="btn btn-gold" value="ok">Check HTML</button></div>
     </form>
   </dialog>
 
@@ -200,6 +410,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
   <script src="js/qc.js"></script>
   <script src="js/prompt.js"></script>
+  <script src="js/data.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

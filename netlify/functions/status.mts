@@ -8,6 +8,7 @@ export default async () =>
     {
       gemini: Boolean(Netlify.env.get("GEMINI_API_KEY")),
       accessCodeRequired: Boolean(Netlify.env.get("ACCESS_CODE")),
+      cloudSync: Boolean(Netlify.env.get("ACCESS_CODE")),
     },
     { headers: { "cache-control": "no-store" } },
   );

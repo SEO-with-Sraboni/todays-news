@@ -350,7 +350,134 @@
     return { title, meta, markdown: clean };
   }
 
-  const QC = { run, parseFrontMatter, stripMarkdown, fromHtml, REFS };
+  // ---------- publication (site) rules ----------
+  // profile.rules shape: see docs/publication-profiles.md
+  const UK_US = [["colour", "color"], ["favour", "favor"], ["behaviour", "behavior"], ["analyse", "analyze"], ["organise", "organize"], ["realise", "realize"], ["centre", "center"], ["licence", "license"], ["defence", "defense"], ["programme", "program"], ["labour", "labor"], ["recognise", "recognize"], ["emphasise", "emphasize"], ["prioritise", "prioritize"], ["optimise", "optimize"]];
+  const PROMO = [/\bbuy now\b/i, /\bsign up (now|today)\b/i, /\bclick here\b/i, /\bbest broker\b/i, /\bdon'?t miss (out)?\b/i, /\blimited[- ]time offer\b/i, /\bour (platform|product|service)\b/i, /\bopen an account\b/i, /\buse (promo|referral) code\b/i];
+
+  function siteRules(input, profile) {
+    const F = [];
+    if (!profile) return F;
+    const r = profile.rules || {};
+    const cat = "Site rules · " + (profile.name || "Publication");
+    const ref = profile.guidelinesUrl ? { label: (profile.name || "Publication") + " guidelines", url: profile.guidelinesUrl } : null;
+    const add = (severity, id, message, fix, match) => F.push({ severity, category: cat, id: "site-" + id, message, fix: fix || "", ref, match: match || null, site: true });
+
+    const md = input.markdown || "";
+    const { body } = parseFrontMatter(md);
+    const plain = stripMarkdown(body);
+    const wc = words(plain).length;
+    if (wc < 30) return F;
+    const hs = headings(body);
+    const title = (input.title || "").trim();
+
+    if (profile.aiPolicy === "banned") add("error", "ai-banned", `${profile.name} does not accept AI-generated content.`, "Use generated text only for research. Write and submit your own original article.");
+    else if (profile.aiPolicy === "disclose") add("warn", "ai-disclose", `${profile.name} requires you to disclose AI assistance.`, profile.aiPolicyNote || "Add the disclosure the publication asks for before submitting.");
+
+    if (r.minWords && wc < r.minWords) add("error", "min-words", `${wc} words — ${profile.name} asks for at least ${r.minWords}.`, `Add ${r.minWords - wc}+ words of substance.`);
+    else if (r.maxWords && wc > r.maxWords) add("error", "max-words", `${wc} words — ${profile.name} allows at most ${r.maxWords}.`, `Cut about ${wc - r.maxWords} words.`);
+    else if (r.minWords || r.maxWords) add("pass", "words", `Word count fits ${profile.name}'s range (${wc}).`);
+
+    if (r.titleMaxChars && title.length > r.titleMaxChars) add("warn", "title-max", `Title is ${title.length} chars; ${profile.name} limit is ${r.titleMaxChars}.`, "Shorten the headline.");
+
+    const links = (body.match(/\]\((https?:\/\/[^)]+)\)/g) || []).map((l) => l.slice(2, -1));
+    if (typeof r.maxLinks === "number" && r.maxLinks >= 0 && links.length > r.maxLinks) add("error", "max-links", `${links.length} links; ${profile.name} allows ${r.maxLinks}.`, "Remove the least important links.");
+    if (r.minLinks && links.length < r.minLinks) add("warn", "min-links", `${links.length} links; ${profile.name} expects at least ${r.minLinks} source links.`, "Link to primary sources for your data.");
+    if (r.noAffiliateLinks) {
+      const aff = links.find((l) => /[?&](ref|aff|affiliate|utm_source|partner)=|\/(go|out|aff|refer)\//i.test(l));
+      if (aff) add("error", "affiliate", "Affiliate or tracking link found.", `${profile.name} doesn't allow affiliate or promotional links.`, aff);
+    }
+    if (r.requireSources && !links.length && !(input.sources || []).length && !/\[\d+\]/.test(body)) add("warn", "sources", `${profile.name} requires sources for facts and data.`, "Cite and link primary sources.");
+
+    (r.requiredSections || []).forEach((sec) => {
+      if (!sec) return;
+      const ok = hs.some((h) => norm(h.text).includes(norm(sec)));
+      if (!ok) add("warn", "section", `Missing required section: “${sec}”.`, `Add a heading for “${sec}”.`);
+    });
+    (r.bannedPhrases || []).forEach((p) => {
+      if (p && countPhrase(plain, p)) add("error", "banned", `Banned phrase for ${profile.name}: “${p}”.`, "Remove or rephrase it.", p);
+    });
+    (r.requiredPhrases || []).forEach((p) => {
+      if (p && !norm(plain).includes(norm(p))) add("warn", "required", `Required wording missing: “${p}”.`, "Add it where the publication expects it.");
+    });
+    if (r.disclaimerRequired) {
+      const want = r.disclaimerText ? norm(r.disclaimerText).slice(0, 40) : "";
+      const has = want ? norm(plain).includes(want) : /not (financial|investment) advice|for (informational|educational) purposes|involves risk/i.test(plain);
+      if (!has) add("error", "disclaimer", `${profile.name} requires a disclaimer.`, r.disclaimerText ? `Add: “${r.disclaimerText}”` : "Add the publication's risk disclaimer.");
+      else add("pass", "disclaimer", "Required disclaimer present.");
+    }
+    if (r.noPromotional) {
+      const m = PROMO.map((re) => plain.match(re)).find(Boolean);
+      if (m) add("error", "promo", `Promotional wording: “${m[0]}”.`, `${profile.name} rejects promotional content. Keep it editorial.`, m[0]);
+    }
+    if (r.firstPerson === "avoid") {
+      const fp = (plain.match(/\b(I|I'm|I've|my|me)\b/g) || []).length;
+      if (fp >= 3) add("warn", "first-person", `First-person used ${fp} times.`, `${profile.name} prefers third-person news style.`, " I ");
+    }
+    if (r.spelling === "UK" || r.spelling === "US") {
+      const lower = " " + plain.toLowerCase() + " ";
+      const wrong = UK_US.map(([uk, us]) => (r.spelling === "UK" ? us : uk)).find((w) => new RegExp("\\b" + w).test(lower));
+      if (wrong) add("warn", "spelling", `${r.spelling === "UK" ? "US" : "UK"} spelling found (“${wrong}”).`, `${profile.name} uses ${r.spelling} English.`, wrong);
+    }
+    if (r.headingCase === "sentence") {
+      const tc = hs.find((h) => h.level > 1 && h.text.split(/\s+/).length >= 4 && h.text.split(/\s+/).filter((w) => /^[A-Z]/.test(w)).length >= h.text.split(/\s+/).length - 1);
+      if (tc) add("info", "heading-case", `Heading looks Title Case: “${tc.text}”.`, `${profile.name} uses sentence case for headings.`, tc.text);
+    }
+    if (r.bioRequired && !/\babout the author\b|\bauthor bio\b|^\*\*?about/im.test(body)) add("info", "bio", `${profile.name} asks for an author bio${r.bioMaxWords ? ` (max ${r.bioMaxWords} words)` : ""}.`, "Add a short bio when you submit.");
+    return F;
+  }
+
+  // ---------- published page (technical) checks ----------
+  function pageSeo(html, url) {
+    const F = [];
+    const add = (severity, id, message, fix, ref) => F.push({ severity, category: "Page SEO", id: "page-" + id, message, fix: fix || "", ref: ref ? REFS[ref] : null, match: null });
+    const get = (re) => { const m = html.match(re); return m ? m[1].trim() : ""; };
+    const meta = (name) => get(new RegExp(`<meta[^>]+(?:name|property)=["']${name}["'][^>]+content=["']([^"']*)["']`, "i")) || get(new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]+(?:name|property)=["']${name}["']`, "i"));
+
+    const canonical = get(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i) || get(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["']canonical["']/i);
+    if (!canonical) add("warn", "canonical", "No canonical URL.", "Add <link rel=\"canonical\"> so Google knows the preferred URL.", "url");
+    else add("pass", "canonical", "Canonical URL set.");
+    const robots = meta("robots");
+    if (/noindex/i.test(robots)) add("error", "noindex", "Page is set to noindex — it won't appear in Google.", "Remove noindex from the robots meta tag.", "headings");
+    if (!/<html[^>]+lang=/i.test(html)) add("info", "lang", "No lang attribute on <html>.", "Add lang=\"en\" (or the right language).");
+    if (!meta("og:title") || !meta("og:image")) add("warn", "og", "Open Graph title or image missing.", "Add og:title and og:image for social and Discover previews.", "news");
+    else add("pass", "og", "Open Graph tags present.");
+    if (!/<meta[^>]+name=["']viewport["']/i.test(html)) add("warn", "viewport", "No mobile viewport tag.", "Add <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">.");
+
+    const blocks = (html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi) || []).map((b) => b.replace(/^<script[^>]*>|<\/script>$/gi, ""));
+    const nodes = [];
+    const walk = (n) => { if (!n || typeof n !== "object") return; if (Array.isArray(n)) return n.forEach(walk); nodes.push(n); if (n["@graph"]) walk(n["@graph"]); };
+    blocks.forEach((b) => { try { walk(JSON.parse(b)); } catch { add("error", "jsonld-bad", "A JSON-LD block has invalid JSON.", "Fix the structured data syntax.", "news"); } });
+    const art = nodes.find((n) => /NewsArticle|Article|BlogPosting|ReportageNewsArticle|AnalysisNewsArticle/.test([].concat(n["@type"] || []).join(" ")));
+    if (!art) add("warn", "schema", "No Article / NewsArticle structured data.", "Add NewsArticle JSON-LD with headline, image, datePublished, dateModified and author.", "news");
+    else {
+      add("pass", "schema", `Structured data found (${[].concat(art["@type"]).join(", ")}).`);
+      ["headline", "datePublished", "author", "image"].forEach((k) => { if (!art[k]) add("warn", "schema-" + k, `Article schema is missing “${k}”.`, `Add ${k} to the JSON-LD.`, "news"); });
+      if (!art.dateModified) add("info", "schema-modified", "Article schema has no dateModified.", "Add dateModified when you update the story.", "news");
+      const auth = [].concat(art.author || [])[0];
+      if (auth && typeof auth === "object" && !auth.url && !auth.sameAs) add("info", "author-url", "Author in schema has no profile URL.", "Link author to a bio page (url or sameAs) for E-E-A-T.", "eeat");
+    }
+    const imgs = html.match(/<img\b[^>]*>/gi) || [];
+    const noAlt = imgs.filter((i) => !/\balt=["'][^"']+["']/i.test(i)).length;
+    if (noAlt) add("warn", "img-alt", `${noAlt} of ${imgs.length} images have no alt text.`, "Describe each image in its alt attribute.", "headings");
+    const time = /<time[^>]+datetime=/i.test(html) || meta("article:published_time");
+    if (!time) add("info", "date-visible", "No machine-readable publish date on the page.", "Show the date with <time datetime> or article:published_time.", "news");
+    if (url && /^http:/i.test(url)) add("error", "https", "Page is served over HTTP, not HTTPS.", "Serve the site over HTTPS.", "url");
+    return F;
+  }
+
+  function merge(base, extra) {
+    const all = base.findings.concat(extra);
+    return summarize(all, base.stats);
+  }
+
+  // ---------- reports ----------
+  function toCsv(rows) {
+    const esc = (v) => { const s = v == null ? "" : String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+    return rows.map((r) => r.map(esc).join(",")).join("\n");
+  }
+
+  const QC = { run, parseFrontMatter, stripMarkdown, fromHtml, siteRules, pageSeo, merge, toCsv, REFS };
   if (typeof module !== "undefined" && module.exports) module.exports = QC;
   else root.QC = QC;
 })(typeof window !== "undefined" ? window : globalThis);

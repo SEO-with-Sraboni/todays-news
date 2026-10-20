@@ -27,7 +27,7 @@ export default async (req: Request, _context: Context) => {
     return json(401, { error: "Access code missing or wrong. Add it in Settings." });
   }
 
-  let body: { prompt?: string; system?: string; model?: string; grounding?: boolean; temperature?: number };
+  let body: { prompt?: string; system?: string; model?: string; grounding?: boolean; temperature?: number; json?: boolean };
   try {
     body = await req.json();
   } catch {
@@ -52,7 +52,9 @@ export default async (req: Request, _context: Context) => {
     generationConfig: { temperature: typeof body.temperature === "number" ? body.temperature : 0.6 },
   };
   if (body.system) payload.systemInstruction = { parts: [{ text: body.system.toString().slice(0, 20_000) }] };
-  if (body.grounding !== false) payload.tools = [{ google_search: {} }];
+  // JSON mode (used to turn guideline pages into rule sets) can't be combined with search grounding.
+  if (body.json) (payload.generationConfig as any).responseMimeType = "application/json";
+  else if (body.grounding !== false) payload.tools = [{ google_search: {} }];
 
   // With no key of your own, Netlify AI Gateway injects GEMINI_API_KEY plus
   // GOOGLE_GEMINI_BASE_URL (billed in Netlify credits). Once you set your own

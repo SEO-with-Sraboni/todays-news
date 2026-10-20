@@ -45,3 +45,20 @@ console.log("bad:", r2.score, r2.grade, ids(r2));
 const page = QC.fromHtml('<html><head><title>T</title><meta name="description" content="D"></head><body><nav>x</nav><article><h1>Hello</h1><p>World <a href="https://x.com">link</a></p></article></body></html>');
 assert.strictEqual(page.title, "T"); assert.strictEqual(page.meta, "D"); assert.ok(page.markdown.startsWith("# Hello"));
 console.log("All QC tests passed.");
+
+// ---- site rules ----
+const prof = { name: "Test Pub", aiPolicy: "banned", rules: { minWords: 800, maxLinks: 1, noPromotional: true, disclaimerRequired: true, spelling: "UK", bannedPhrases: ["moon"], requiredSections: ["Outlook"], noAffiliateLinks: true } };
+const sr = QC.siteRules({ markdown: "# T\n\n" + "The color of the market will moon soon. Buy now at our platform. ".repeat(10) + "[a](https://x.com/?ref=me) [b](https://y.com)" }, prof);
+const sids = sr.map((f) => f.id);
+console.log("site:", sids);
+["site-ai-banned", "site-min-words", "site-max-links", "site-affiliate", "site-section", "site-banned", "site-disclaimer", "site-promo", "site-spelling"].forEach((id) => assert.ok(sids.includes(id), "expected " + id));
+
+// ---- page SEO ----
+const ps = QC.pageSeo('<html><head><meta name="robots" content="noindex"></head><body><img src="a.png"></body></html>', "http://x.com/a");
+const pids = ps.map((f) => f.id);
+console.log("page:", pids);
+["page-canonical", "page-noindex", "page-schema", "page-img-alt", "page-https"].forEach((id) => assert.ok(pids.includes(id), "expected " + id));
+const good2 = QC.pageSeo('<html lang="en"><head><link rel="canonical" href="https://x.com/a"><meta name="viewport" content="width=device-width"><meta property="og:title" content="T"><meta property="og:image" content="i.png"><script type="application/ld+json">{"@type":"NewsArticle","headline":"T","datePublished":"2026-10-20","dateModified":"2026-10-20","author":{"@type":"Person","name":"A","url":"https://x.com/a"},"image":"i.png"}</script></head><body><time datetime="2026-10-20">x</time><img src="a.png" alt="chart"></body></html>', "https://x.com/a");
+assert.strictEqual(good2.filter((f) => f.severity === "error" || f.severity === "warn").length, 0, "clean page should have no issues");
+assert.ok(QC.toCsv([["a", 'b"c', "d,e"]]) === 'a,"b""c","d,e"');
+console.log("All site/page tests passed.");

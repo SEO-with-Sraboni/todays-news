@@ -39,13 +39,35 @@
     return "Today's top market mover and what traders are watching";
   }
 
+  function profileBrief(p) {
+    if (!p || p.id === "house" && !p.rules) return "";
+    const r = p.rules || {};
+    const out = [];
+    if (r.minWords || r.maxWords) out.push(`- Length: ${r.minWords || "?"}–${r.maxWords || "?"} words.`);
+    if (r.titleMaxChars) out.push(`- Headline: max ${r.titleMaxChars} characters.`);
+    if (r.spelling && r.spelling !== "any") out.push(`- Use ${r.spelling} English spelling.`);
+    if (r.headingCase && r.headingCase !== "any") out.push(`- Headings in ${r.headingCase} case.`);
+    if (r.firstPerson === "avoid") out.push("- Write in third person; avoid I/my.");
+    if (r.minLinks) out.push(`- Include at least ${r.minLinks} links to primary sources as markdown links.`);
+    if (typeof r.maxLinks === "number" && r.maxLinks >= 0) out.push(`- No more than ${r.maxLinks} links.`);
+    if (r.noAffiliateLinks) out.push("- No affiliate, referral or tracking links.");
+    if (r.noPromotional) out.push("- No promotional language about any broker, exchange, product or service.");
+    if (r.requiredSections && r.requiredSections.length) out.push(`- Include these sections as headings: ${r.requiredSections.join(", ")}.`);
+    if (r.bannedPhrases && r.bannedPhrases.length) out.push(`- Never use: ${r.bannedPhrases.join(", ")}.`);
+    if (r.requiredPhrases && r.requiredPhrases.length) out.push(`- Must include: ${r.requiredPhrases.join("; ")}.`);
+    if (r.disclaimerRequired) out.push(`- End with this disclaimer: ${r.disclaimerText || "a risk disclaimer stating this is not financial advice"}.`);
+    (r.otherRules || []).forEach((x) => out.push("- " + x));
+    return out.join("\n");
+  }
+
   function build(opts) {
     const now = opts.now || new Date();
     const desk = DESKS[opts.desk] || DESKS.auto;
     const longDate = now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
     const iso = now.toISOString().slice(0, 10);
-    const minWords = opts.minWords || 600;
-    const maxWords = opts.maxWords || 900;
+    const pr = (opts.profile && opts.profile.rules) || {};
+    const minWords = pr.minWords || opts.minWords || 600;
+    const maxWords = pr.maxWords || opts.maxWords || 900;
 
     const system = [
       "You are a senior financial news writer for “Today's News”, an independent market news desk.",
@@ -60,6 +82,7 @@
     ].join("\n");
 
     const extra = (opts.houseStyle || "").trim();
+    const site = profileBrief(opts.profile);
     const topic = (opts.topic || "").trim();
 
     const user = [
@@ -96,11 +119,12 @@
       "Cite facts inline with bracketed numbers like [1], [2] that match the order of your sources.",
       "",
       "_This article is for information only and is not financial advice. Trading involves risk._",
+      site ? `\nThis article is for ${opts.profile.name}. Follow its contributor rules exactly (they override the format above where they conflict):\n${site}` : "",
       extra ? `\nHouse style notes from the editor:\n${extra}` : "",
     ].join("\n");
 
     return { system, user, meta: { date: longDate, edition: edition(now), session: session(now), angle: suggestedAngle(now), desk: desk.label } };
   }
 
-  root.Prompt = { build, DESKS, session, edition, suggestedAngle };
+  root.Prompt = { build, profileBrief, DESKS, session, edition, suggestedAngle };
 })(window);

@@ -7,8 +7,11 @@
     "dev": "netlify dev",
     "test": "node tests/qc.test.cjs"
   },
+  "dependencies": {
+    "@netlify/blobs": "^11.1.4"
+  },
   "devDependencies": {
-    "@netlify/functions": "^4.0.0"
+    "@netlify/functions": "^6.0.2"
   },
   "license": "MIT"
 }
