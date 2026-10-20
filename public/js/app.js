@@ -695,9 +695,10 @@
 
   // ---------------- PULSE ----------------
   let pulse = null, pulseKind = "all", pulseLoading = null;
+  const unent = (t) => String(t || "").replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(+d)).replace(/&amp;/g, "&");
   async function loadPulse(forDesk, force) {
     if (!pulse || force) {
-      pulseLoading = pulseLoading || api("/api/pulse").then((d) => (pulse = d)).catch(() => (pulse = { items: [], failed: ["all"] })).finally(() => (pulseLoading = null));
+      pulseLoading = pulseLoading || api("/api/pulse").then((d) => { d.items.forEach((i) => (i.title = unent(i.title))); return (pulse = d); }).catch(() => (pulse = { items: [], failed: ["all"] })).finally(() => (pulseLoading = null));
       await pulseLoading;
     }
     if (forDesk) {
