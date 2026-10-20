@@ -44,7 +44,7 @@ See **[docs/qc-rules.md](docs/qc-rules.md)** and **[docs/publication-profiles.md
 - **Frontend:** vanilla HTML, CSS and JavaScript — no framework, no build step
 - **Backend:** Netlify Functions (TypeScript): Gemini proxy, page fetcher, Google Pulse feed reader, workspace sync
 - **Storage:** browser storage + Netlify Blobs
-- **AI:** Google Gemini 2.5 with Google Search grounding (free tier, or Netlify AI Gateway)
+- **AI:** Google Gemini 2.5 with Google Search grounding (free Google AI Studio key; Netlify AI Gateway credits are never used)
 - **Libraries:** marked, DOMPurify, mammoth (Word import, loaded on demand)
 
 Architecture notes: **[docs/architecture.md](docs/architecture.md)**

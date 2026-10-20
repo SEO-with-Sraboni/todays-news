@@ -39,11 +39,15 @@ export default async (req: Request, _context: Context) => {
   if (prompt.length > MAX_PROMPT_CHARS) return json(413, { error: "Prompt is too long." });
 
   const model = ALLOWED_MODELS.has(body.model || "") ? body.model! : "gemini-2.5-flash";
-  // A personal key from the browser overrides the server key (useful when the shared key is rate-limited).
-  const apiKey = req.headers.get("x-user-gemini-key") || Netlify.env.get("GEMINI_API_KEY");
+  // Only ever use a real Google AI Studio key: the personal key from Settings, or GEMINI_API_KEY
+  // set by you in Netlify. Netlify AI Gateway also injects a GEMINI_API_KEY (alongside
+  // GOOGLE_GEMINI_BASE_URL) that bills Netlify credits — that one is deliberately ignored.
+  const userKey = req.headers.get("x-user-gemini-key");
+  const gatewayKey = Boolean(Netlify.env.get("GOOGLE_GEMINI_BASE_URL"));
+  const apiKey = userKey || (gatewayKey ? "" : Netlify.env.get("GEMINI_API_KEY"));
   if (!apiKey) {
     return json(500, {
-      error: "No Gemini API key configured. Add GEMINI_API_KEY in Netlify environment variables, or a personal key in Settings.",
+      error: "No Gemini key set. Add your free Google AI Studio key as GEMINI_API_KEY in Netlify (then redeploy), or paste it in Settings → Personal Gemini key.",
     });
   }
 
@@ -56,12 +60,7 @@ export default async (req: Request, _context: Context) => {
   if (body.json) (payload.generationConfig as any).responseMimeType = "application/json";
   else if (body.grounding !== false) payload.tools = [{ google_search: {} }];
 
-  // With no key of your own, Netlify AI Gateway injects GEMINI_API_KEY plus
-  // GOOGLE_GEMINI_BASE_URL (billed in Netlify credits). Once you set your own
-  // free Google AI Studio key, Netlify stops injecting and calls go to Google directly.
-  const userKey = Boolean(req.headers.get("x-user-gemini-key"));
-  const base = (!userKey && Netlify.env.get("GOOGLE_GEMINI_BASE_URL")) || "https://generativelanguage.googleapis.com";
-  const url = `${base.replace(/\/+$/, "")}/v1beta/models/${model}:generateContent`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
   let res: Response;
   try {

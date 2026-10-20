@@ -6,7 +6,8 @@ import type { Config } from "@netlify/functions";
 export default async () =>
   Response.json(
     {
-      gemini: Boolean(Netlify.env.get("GEMINI_API_KEY")),
+      // Netlify AI Gateway keys (which spend Netlify credits) are not counted.
+      gemini: Boolean(Netlify.env.get("GEMINI_API_KEY")) && !Netlify.env.get("GOOGLE_GEMINI_BASE_URL"),
       accessCodeRequired: Boolean(Netlify.env.get("ACCESS_CODE")),
       cloudSync: Boolean(Netlify.env.get("ACCESS_CODE")),
     },
