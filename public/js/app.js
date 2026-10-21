@@ -100,9 +100,20 @@
     pool.sort((a, b) => ver(b) - ver(a) || a.length - b.length);
     return pool[0] || null;
   }
+  const QUOTA = /quota|rate limit|resource.?exhausted|429/i;
+  const BUSY = /high demand|overloaded|unavailable|503|try again later/i;
+  const LIGHT = { gemini: "gemini-flash-lite-latest" };
   async function gemini(body) {
     try { return await callAi(body); }
     catch (e) {
+      // Live search quota used up: let the caller retry without search.
+      if (body.grounding && QUOTA.test(e.message)) { e.searchQuota = true; throw e; }
+      // Model busy or its own quota used up: retry once on the provider's lighter model.
+      const light = LIGHT[curProvider()];
+      if (light && (BUSY.test(e.message) || QUOTA.test(e.message)) && (body.model || curModel()) !== light) {
+        toast(`${curModel()} is busy or at its limit — trying ${light}.`, "");
+        return await callAi(Object.assign({}, body, { model: light }));
+      }
       if (!RETIRED.test(e.message)) throw e;
       const pid = curProvider(), old = curModel();
       let list;
@@ -344,7 +355,14 @@
     const btn = $("generate");
     busy(btn, true, "Researching…");
     try {
-      const data = await gemini({ prompt: pr.user, system: pr.system, grounding: grounded() });
+      let data;
+      try { data = await gemini({ prompt: pr.user, system: pr.system, grounding: grounded() }); }
+      catch (e) {
+        if (!e.searchQuota) throw e;
+        toast("Live search's free limit is used up — writing without search. Fill in each [VERIFY] from a live source.", "");
+        const pr2 = Prompt.build({ desk: ws.desk, topic: $("topic").value, author: S().author, minWords: +S().min, maxWords: +S().max, houseStyle: S().style, profile: p, grounded: false });
+        data = await gemini({ prompt: pr2.user, system: pr2.system, grounding: false });
+      }
       const text = data.text.replace(/^```(?:markdown|md)?\s*\n/i, "").replace(/\n```\s*$/i, "").trim() + "\n";
       $("md").value = text;
       ws.doc.sources = data.sources || [];
